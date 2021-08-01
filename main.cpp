@@ -48,12 +48,50 @@ int main(){
     listen(socketServer, SOMAXCONN);
     //PRINT
     std::stringstream ss;
-    ss << PORT 
-    
+    ss << PORT;
+    std::cout <<  "[SERVER] Lytter på PORT" << ss.str() << std::endl;
 
-    
-    
 
+    char buff[4096];
+    int sizeBytesOfRecivedData;
+
+    //whileloop
+    while (true)
+    {
+        /* code */
+        socketClient = accept(socketServer,(struct sockaddr*)&caddr, (socklen_t*)&caddrSize);
+        std::cout << "[SERVER] Forbindelse oprettet" << std::endl;
+
+
+        char hostClient[NI_MAXHOST];
+        char portClient[NI_MAXSERV];
+        memset(hostClient, 0, NI_MAXHOST);
+        memset(portClient,0,NI_MAXSERV);
+        if (getnameinfo((sockaddr*)&caddr,sizeof(caddr), hostClient, NI_MAXHOST,portClient,NI_MAXSERV,0) == 0){
+
+            std::cout << "--> IP:  " << hostClient << "--> PORT: " << portClient << std::endl;
+        }
+        else{
+            inet_ntop(AF_INET, &caddr.sin_addr,hostClient, NI_MAXHOST);
+            std::cout << "--> IP: " << hostClient << "--> " << ntohs(caddr.sin_port) << std::endl;
+        
+        }
+        //modtag data
+        sizeBytesOfRecivedData = recv(socketClient,buff, 4096,0 );
+        if(sizeBytesOfRecivedData == -1){
+            std::cerr << "Error" << endl;
+            break;
+        }
+        else if(sizeBytesOfRecivedData == 0) {
+            std::cout << "Client disconnected" << std::endl;
+            break;
+
+        }
+
+        send(socketClient, buff, sizeBytesOfRecivedData + 1, 0);
+        std::cout << std::string(buff,0, sizeBytesOfRecivedData) << std::endl;
+        close(socketClient);
+    }
 
     return 0;
 }
